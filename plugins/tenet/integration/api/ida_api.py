@@ -18,6 +18,7 @@ import ida_name
 import ida_xref
 import idautils
 import ida_bytes
+import ida_ida
 import ida_idaapi
 import ida_diskio
 import ida_kernwin
@@ -198,9 +199,10 @@ class IDAContextAPI(DisassemblerContextAPI):
         pass
 
     def is_64bit(self):
-        inf = ida_idaapi.get_inf_structure()
+        #inf = ida_idaapi.get_inf_structure()
         #target_filetype = inf.filetype
-        return inf.is_64bit()
+        #return inf.is_64bit()
+        return ida_ida.inf_is_64bit()
 
     def is_call_insn(self, address):
         insn = ida_ua.insn_t()
@@ -218,7 +220,8 @@ class IDAContextAPI(DisassemblerContextAPI):
 
             # fetch code segments
             seg = ida_segment.getseg(seg_address)
-            if seg.sclass != ida_segment.SEG_CODE:
+            if ida_segment.get_segm_class(ida_segment.getseg(seg_address)) != 'CODE':
+            #if seg.sclass != ida_segment.SEG_CODE:
                 continue
 
             current_address = seg_address
@@ -569,7 +572,7 @@ class DockableWindow(ida_kernwin.PluginForm):
 class IDADockSizeHack(QtCore.QObject):
     def eventFilter(self, obj, event):
         if event.type() == QtCore.QEvent.WindowActivate:
-            obj.setMinimumWidth(obj.min_width)
-            obj.setMaximumWidth(obj.max_width)
+            obj.setMinimumWidth(int(obj.min_width))
+            obj.setMaximumWidth(int(obj.max_width))
             obj.removeEventFilter(self)
         return False
